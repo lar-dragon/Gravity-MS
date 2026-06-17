@@ -513,10 +513,13 @@ class PopupService extends AbstractService
             $items = $markVerifyResponse->getItems();
 
             if (is_array($items)) {
+                // Позволяет использовать слеши, двойные кавычки, спец-символы, корректно декодирует unicode-последовательности в code.
+                $codeString = json_decode('"' . preg_replace('#(\\\\(?!(u[0-9a-fA-F]{4}|[ntrbf]))|")#', '\\\\$0', $code) . '"');
+                
                 foreach ($items as $item) {
                     $c = $item->getGsMarkCodeNormalized();
 
-                    if ($c == json_decode('"' . $code . '"')) {
+                    if ($c == $codeString) {
                         if ($item->getStatus() == MarkVerifyItem::MARK_SUCCESS) {
                             return true;
                         } else {
