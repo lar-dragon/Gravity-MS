@@ -236,15 +236,17 @@ abstract class AbstractHandler
         $receipt->setItems($items);
         $check->setReceipt($receipt);
 
-        if ($method == Payment::PAYMENT_METHOD_FULL_PAYMENT) {
+        if ($method !== Payment::PAYMENT_METHOD_FULL_PAYMENT) {
+            $this->getLogger()->info('Предварительная проверка маркировки "Честный знак" пропущена так как выполняется только полного расчета');
+        } elseif ($operation == Operation::SELL_REFUND) {
+            $this->getLogger()->info('Предварительная проверка маркировки "Честный знак" пропущена так как не выполняется для возвратов');
+        } else {
             $markVerifyResponse = $ecomApi->markVerify($check, $groupCode, $operation, $login, $password);
             if ($markVerifyResponse instanceof MarkVerifyResponse) {
                 $this->getLogger()->info('Результат предварительной проверки маркировки "Честный знак" получен: orderId=' . $markVerifyResponse->getOrderId());
 
                 $this->addMark($markVerifyResponse, $check);
             }
-        } else {
-            $this->getLogger()->info('Предварительная проверка маркировки "Честный знак" пропущена так как выполняется только полного расчета');
         }
 
         $statusService = new StatusService($this->getLogger());
@@ -319,7 +321,8 @@ abstract class AbstractHandler
      */
     public function applyMarkCode(Position $position, Event $event, object $entity, object $row, JsonApi $jsonApi): void
     {
-        if (!in_array($event->getMeta()->getType(), [Type::DEMAND, Type::CUSTOMER_ORDER])) {
+        // Маркировка применяется к заказу, отгрузке и возврату
+        if (!in_array($event->getMeta()->getType(), [Type::DEMAND, Type::CUSTOMER_ORDER, Type::SALES_RETURN])) {
 
             return ;
         }
