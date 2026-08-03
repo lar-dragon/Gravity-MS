@@ -452,6 +452,9 @@ class PopupService extends AbstractService
 
     public function verifyCode(?string $code): ?bool
     {
+        // Поле code может содержать \n по краям, которые попадают в БД через refreshStatuses
+        $code = trim($code);
+
         if (empty($code)) {
 
             return null;
@@ -513,13 +516,14 @@ class PopupService extends AbstractService
             $items = $markVerifyResponse->getItems();
 
             if (is_array($items)) {
-                // Позволяет использовать слеши, двойные кавычки, спец-символы, корректно декодирует unicode-последовательности в code.
-                $codeString = json_decode('"' . preg_replace('#(\\\\(?!(u[0-9a-fA-F]{4}|[ntrbf]))|")#', '\\\\$0', $code) . '"');
+                // Сравнение по base64 кодированной строке:
+                // Ответ содержит gsMarkCode — ту же base64 строку
+                $codeBase64 = $markCode->getGs1mEncoded($markCode->getGs1m());
                 
                 foreach ($items as $item) {
                     $c = $item->getGsMarkCodeNormalized();
 
-                    if ($c == $codeString) {
+                    if ($c == $codeBase64) {
                         if ($item->getStatus() == MarkVerifyItem::MARK_SUCCESS) {
                             return true;
                         } else {

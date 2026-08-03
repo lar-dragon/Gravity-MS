@@ -199,10 +199,7 @@ class MarkCode
         }
 
         if ($this->getGs1m() !== null) {
-            $s = $this->getGs1m();
-            $s = str_replace('\\u001D', chr(29), $s);
-
-            $result['gs1m'] = base64_encode($s);
+            $result['gs1m'] = $this->getGs1mEncoded($this->getGs1m());
         }
 
         if ($this->getShort() !== null) {
@@ -222,6 +219,17 @@ class MarkCode
         }
 
         return $result;
+    }
+
+    /**
+     * Возвращает кодированный base64 gs1m
+     *
+     * @param string $gs1m
+     * @return string
+     */
+    public function getGs1mEncoded(string $gs1m): string
+    {
+        return base64_encode(str_replace('\\u001D', chr(29), $gs1m));
     }
 
     /**
