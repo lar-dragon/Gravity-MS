@@ -181,6 +181,7 @@ abstract class AbstractHandler
         $receipt->setPayments($payments);
 
         $items = [];
+        $itemsSums = 0;
 
         $positions = $jsonApi->getByHref($entity->positions->meta->href);
         if ($positions) {
@@ -201,8 +202,15 @@ abstract class AbstractHandler
 
                     $position->setName($product->name);
                     $position->setPrice($row->price / 100);
-                    $position->setSum(($row->quantity * $row->price) / 100);
-                    $position->setQuantity($row->quantity);
+
+                    // Дя весовых товаров точность 3 знака после запятой
+                    $total = floor($row->quantity * 1000) / 1000;
+                    // Считаем сумму по позиции с округлением вверх по копейкам
+                    $sum = ceil($total * $row->price);
+                    $itemsSums += $sum;
+
+                    $position->setSum($sum / 100);
+                    $position->setQuantity($total);
 
                     $vat = new Vat();
                     $vat->setType(Vat::VAT_NONE);
@@ -231,6 +239,13 @@ abstract class AbstractHandler
                     $items[] = $position->toArray();
                 }
             }
+        }
+
+        // Заменим $total если сумма позиций отличается от суммы по документу от МС
+        $itemsTotal = $itemsSums / 100;
+        if ($total !== $itemsTotal) {
+            $receipt->setTotal($itemsTotal);
+            $payment->setSum($itemsTotal);
         }
 
         $receipt->setItems($items);
