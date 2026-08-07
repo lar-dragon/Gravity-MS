@@ -10,7 +10,7 @@ require_once __DIR__ . '/../lib/lib.php';
 
 //print '<pre>';print_r($_SERVER);
 $method = $_SERVER['REQUEST_METHOD'];
-$path = $_SERVER['SCRIPT_NAME'] ?? '';
+$path = $_SERVER['REQUEST_URI'] ?? '';
 $headers = apache_request_headers();
 log_message('DEBUG', "Received: method=$method, path=$path, headers=" . print_r($headers, true));
 
