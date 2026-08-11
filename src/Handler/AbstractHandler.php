@@ -211,7 +211,7 @@ abstract class AbstractHandler
                     $itemsSums += $sum;
 
                     $position->setSum($sum / 100);
-                    $position->setQuantity($total);
+                    $position->setQuantity($total / 1000);
 
                     $vat = new Vat();
                     $vat->setType(Vat::VAT_NONE);
