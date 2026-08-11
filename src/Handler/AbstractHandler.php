@@ -203,14 +203,15 @@ abstract class AbstractHandler
                     $position->setName($product->name);
                     $position->setPrice($row->price / 100);
 
-                    // Дя весовых товаров точность 3 знака после запятой
-                    $total = floor($row->quantity * 1000) / 1000;
+                    // Для весовых товаров точность 3 знака после запятой
+                    $total = floor($row->quantity * 1000);
                     // Считаем сумму по позиции с округлением вверх по копейкам
-                    $sum = ceil($total * $row->price);
+                    // Деление должно быть последней операцией перед ceil для точности float
+                    $sum = ceil($total * $row->price / 1000);
                     $itemsSums += $sum;
 
                     $position->setSum($sum / 100);
-                    $position->setQuantity($total);
+                    $position->setQuantity($total / 1000);
 
                     $vat = new Vat();
                     $vat->setType(Vat::VAT_NONE);
