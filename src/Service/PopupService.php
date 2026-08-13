@@ -516,14 +516,8 @@ class PopupService extends AbstractService
             $items = $markVerifyResponse->getItems();
 
             if (is_array($items)) {
-                // Сравнение по base64 кодированной строке:
-                // Ответ содержит gsMarkCode — ту же base64 строку
-                $codeBase64 = $markCode->getGs1mEncoded($markCode->getGs1m());
-                
                 foreach ($items as $item) {
-                    $c = $item->getGsMarkCodeNormalized();
-
-                    if ($c == $codeBase64) {
+                    if ($item->getName() == $position->getName()) {
                         if ($item->getStatus() == MarkVerifyItem::MARK_SUCCESS) {
                             return true;
                         } else {
