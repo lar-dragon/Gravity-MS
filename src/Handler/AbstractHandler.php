@@ -201,13 +201,16 @@ abstract class AbstractHandler
                     }
 
                     $position->setName($product->name);
-                    $position->setPrice($row->price / 100);
+
+                    // После вычисления скидки могут появиться доли копейки
+                    $price = floor($row->price);
+                    $position->setPrice($price / 100);
 
                     // Для весовых товаров точность 3 знака после запятой
                     $total = floor($row->quantity * 1000);
                     // Считаем сумму по позиции с округлением вверх по копейкам
                     // Деление должно быть последней операцией перед ceil для точности float
-                    $sum = ceil($total * $row->price / 1000);
+                    $sum = ceil($total * $price / 1000);
                     $itemsSums += $sum;
 
                     $position->setSum($sum / 100);
